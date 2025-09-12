@@ -1,0 +1,67 @@
+# Name für den Workflow
+name: Deploy Vue.js to GitHub Pages
+
+on:
+  # Wird bei Pushes auf den main-Branch ausgeführt
+  push:
+    branches: ["main"]
+
+  # Ermöglicht manuellen Start
+  workflow_dispatch:
+
+# Setzt die benötigten Berechtigungen für das Deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Stellt sicher, dass immer nur ein Deployment läuft
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build-Job: Erstellt die statische Seite
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 1. Node.js-Umgebung einrichten
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Oder die Version, die Sie lokal verwenden
+          cache: 'npm' # Beschleunigt zukünftige Builds durch Caching der Dependencies
+
+      # 2. Abhängigkeiten installieren
+      - name: Install dependencies
+        run: npm install
+
+      # 3. Die Vue-App bauen (erstellt den 'dist'-Ordner)
+      - name: Build
+        run: npm run build
+
+      # 4. GitHub Pages für das Deployment vorbereiten
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 5. Das Build-Ergebnis (den 'dist'-Ordner) als Artefakt hochladen
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Pfad zum Ordner, der hochgeladen werden soll
+          path: './dist'
+
+  # Deploy-Job: Veröffentlicht das Artefakt
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build # Dieser Job wartet, bis der 'build'-Job fertig ist
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
