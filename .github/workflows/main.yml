@@ -28,26 +28,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. Node.js-Umgebung einrichten
+      # Node.js-Umgebung einrichten
+      # Die 'cache'-Option wurde hier entfernt, um den Fehler zu umgehen.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Oder die Version, die Sie lokal verwenden
-          cache: 'npm' # Beschleunigt zukünftige Builds durch Caching der Dependencies
+          node-version: '20'
 
-      # 2. Abhängigkeiten installieren
+      # Abhängigkeiten installieren
       - name: Install dependencies
         run: npm install
 
-      # 3. Die Vue-App bauen (erstellt den 'dist'-Ordner)
+      # Die Vue-App bauen (erstellt den 'dist'-Ordner)
       - name: Build
         run: npm run build
 
-      # 4. GitHub Pages für das Deployment vorbereiten
+      # GitHub Pages für das Deployment vorbereiten
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 5. Das Build-Ergebnis (den 'dist'-Ordner) als Artefakt hochladen
+      # Das Build-Ergebnis (den 'dist'-Ordner) als Artefakt hochladen
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
